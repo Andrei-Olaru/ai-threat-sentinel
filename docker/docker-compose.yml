@@ -1,0 +1,71 @@
+# =============================================================================
+# Docker Compose — Local development stack
+#
+# Starts all infrastructure services needed for local development:
+# - PostgreSQL (database for alerts and events)
+# - Redis (message queue for async log processing)
+# - App (FastAPI with hot-reload)
+#
+# Usage: docker compose up        (start all)
+#        docker compose up -d     (start in background)
+#        docker compose down -v   (stop and remove volumes)
+# =============================================================================
+
+services:
+  # --- PostgreSQL ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: sentinel-postgres
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel_dev_pass
+      POSTGRES_DB: threat_sentinel
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d threat_sentinel"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- Redis ---
+  redis:
+    image: redis:7-alpine
+    container_name: sentinel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- Application ---
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: sentinel-app
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: development
+      DEBUG: "true"
+      LOG_LEVEL: DEBUG
+      DATABASE_URL: postgresql+asyncpg://sentinel:sentinel_dev_pass@postgres:5432/threat_sentinel
+      REDIS_URL: redis://redis:6379/0
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL_ID: ${GROQ_MODEL_ID:-llama-3.3-70b-versatile}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

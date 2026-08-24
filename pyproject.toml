@@ -1,0 +1,143 @@
+[project]
+name = "ai-threat-sentinel"
+version = "0.1.0"
+description = "AI-Powered SIEM & Threat Intelligence Platform with ML anomaly detection and LLM-driven root cause analysis"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Olaru Andrei Mădălin"},
+]
+keywords = ["siem", "threat-detection", "machine-learning", "cybersecurity", "fastapi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+]
+
+dependencies = [
+    # Web framework + ASGI server
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+
+    # Validation & config
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+
+    # Database (async PostgreSQL ORM + migrations)
+    "sqlalchemy[asyncio]>=2.0.35",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+
+    # Message queue
+    "redis[hiredis]>=5.2.0",
+
+    # Machine learning (Isolation Forest)
+    "scikit-learn>=1.5.0",
+    "numpy>=1.26.0",
+
+    # LLM inference (Groq API)
+    "groq>=0.11.0",
+
+    # Structured JSON logging
+    "structlog>=24.4.0",
+
+    # Async HTTP client
+    "httpx>=0.27.0",
+
+    # HTML templates (HTMX dashboard)
+    "jinja2>=3.1.0",
+
+    # Prometheus metrics exporter
+    "prometheus-client>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+
+    # Linting & formatting (Rust-based, replaces flake8+black+isort)
+    "ruff>=0.7.0",
+
+    # Static type checking
+    "mypy>=1.13.0",
+
+    # Git hooks
+    "pre-commit>=4.0.0",
+]
+
+[project.scripts]
+sentinel = "sentinel.main:cli"
+
+# --- Build ---
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# --- Ruff (linter + formatter) ---
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort (import ordering)
+    "N",         # pep8-naming
+    "UP",        # pyupgrade
+    "S",         # security (bandit)
+    "B",         # bugbear
+    "A",         # flake8-builtins
+    "COM",       # commas
+    "C4",        # comprehensions
+    "T20",       # no print() — use logging
+    "PT",        # pytest style
+    "RET",       # return statements
+    "SIM",       # simplify
+    "TCH",       # type-checking imports
+    "ARG",       # unused arguments
+    "ERA",       # commented-out code
+    "RUF",       # ruff-specific
+]
+ignore = [
+    "S101",   # allow assert in tests
+    "COM812", # trailing comma conflict with formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "ARG", "S106"]
+
+# --- Pytest ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = ["-v", "--strict-markers", "--tb=short", "-ra"]
+markers = [
+    "unit: Unit tests (fast, no external dependencies)",
+    "integration: Integration tests (need Docker services)",
+    "e2e: End-to-end tests (full pipeline)",
+]
+
+# --- Mypy (static type checker) ---
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn.*", "redis.*", "prometheus_client.*"]
+ignore_missing_imports = true
