@@ -84,6 +84,16 @@ jobs:
             -e DATABASE_URL=postgresql+asyncpg://x:x@localhost/x \
             -e REDIS_URL=redis://localhost:6379/0 \
             sentinel:ci
-          sleep 5
-          curl -f http://localhost:8000/api/v1/healthz || exit 1
-          docker stop sentinel-ci
+          # Retry health check (container may need a few seconds to start)
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:8000/api/v1/healthz; then
+              echo " ✅ Health check passed"
+              exit 0
+            fi
+            echo "Waiting for container... (attempt $i/10)"
+            sleep 2
+          done
+          echo "❌ Container failed to start"
+          docker logs sentinel-ci
+          exit 1
+
