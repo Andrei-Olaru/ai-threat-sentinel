@@ -21,14 +21,15 @@ RUN apt-get update && \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy only dependency files first (Docker layer caching optimization)
-# If dependencies don't change, Docker reuses this cached layer
-COPY pyproject.toml ./
+# Copy project files needed by pip install:
+# - pyproject.toml (metadata + dependencies)
+# - README.md (referenced by readme field)
+# - src/ (the actual package code setuptools needs to find)
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
-
-# Copy source code (changes more often — this layer rebuilds more frequently)
-COPY src/ ./src/
 
 # --- Stage 2: Runtime ---
 FROM python:3.12-slim AS runtime
