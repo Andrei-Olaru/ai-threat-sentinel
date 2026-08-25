@@ -39,11 +39,42 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         debug=settings.DEBUG,
     )
 
-    # TODO (Module 2): Initialize Redis connection pool
+    # --- Startup: Redis ---
+    redis_conn = None
+    if settings.REDIS_URL:
+        try:
+            import redis.asyncio as aioredis
+
+            from sentinel.ingestion.queue import ensure_consumer_group
+
+            redis_conn = aioredis.from_url(
+                settings.REDIS_URL,
+                decode_responses=False,
+            )
+            # Verify connectivity
+            await redis_conn.ping()
+            logger.info("redis_connected", url=settings.REDIS_URL[:20] + "...")
+
+            # Create consumer group for the event stream
+            await ensure_consumer_group(redis_conn)
+        except Exception:
+            logger.warning(
+                "redis_connection_failed",
+                url=settings.REDIS_URL[:20] + "...",
+            )
+            redis_conn = None
+
+    app.state.redis = redis_conn
+
     # TODO (Module 3): Load trained Isolation Forest model
     # TODO (Module 4): Initialize async DB session factory
 
     yield
+
+    # --- Shutdown ---
+    if redis_conn is not None:
+        await redis_conn.close()
+        logger.info("redis_disconnected")
 
     logger.info("application_shutting_down")
 

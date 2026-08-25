@@ -25,7 +25,7 @@ def test_settings() -> Settings:
         DEBUG=True,
         LOG_LEVEL="DEBUG",
         DATABASE_URL="postgresql+asyncpg://test:test@localhost:5432/test_db",
-        REDIS_URL="redis://localhost:6379/1",
+        REDIS_URL="",  # Empty = skip Redis connection in tests
         GROQ_API_KEY="test-key-not-real",
     )
 
