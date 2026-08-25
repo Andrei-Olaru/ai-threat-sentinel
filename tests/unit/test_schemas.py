@@ -24,25 +24,39 @@ class TestLogEvent:
     def test_missing_required_field(self) -> None:
         """Missing src_ip should raise validation error."""
         with pytest.raises(ValueError, match="src_ip"):
-            LogEvent(event_type=EventType.NORMAL)
+            LogEvent.model_validate({"event_type": EventType.NORMAL})
 
     def test_port_validation(self) -> None:
         """Ports must be between 0 and 65535."""
         with pytest.raises(ValueError, match="less than or equal"):
-            LogEvent(src_ip="1.2.3.4", event_type=EventType.NORMAL, src_port=70000)
+            LogEvent.model_validate(
+                {
+                    "src_ip": "1.2.3.4",
+                    "event_type": EventType.NORMAL,
+                    "src_port": 70000,
+                }
+            )
 
     def test_response_status_validation(self) -> None:
         """HTTP status must be between 0 and 599."""
         with pytest.raises(ValueError, match="greater than or equal"):
-            LogEvent(src_ip="1.2.3.4", event_type=EventType.NORMAL, response_status=-1)
+            LogEvent.model_validate(
+                {
+                    "src_ip": "1.2.3.4",
+                    "event_type": EventType.NORMAL,
+                    "response_status": -1,
+                }
+            )
 
     def test_payload_max_length(self) -> None:
         """Payload should enforce max length of 10000."""
         with pytest.raises(ValueError, match="at most 10000"):
-            LogEvent(
-                src_ip="1.2.3.4",
-                event_type=EventType.NORMAL,
-                payload="x" * 10001,
+            LogEvent.model_validate(
+                {
+                    "src_ip": "1.2.3.4",
+                    "event_type": EventType.NORMAL,
+                    "payload": "x" * 10001,
+                }
             )
 
     def test_serialization_roundtrip(self) -> None:
@@ -65,8 +79,12 @@ class TestEventType:
     def test_all_event_types_exist(self) -> None:
         """All expected event types should be defined."""
         expected = {
-            "ssh_brute_force", "sqli_attempt", "port_scan",
-            "xss_attempt", "dns_exfiltration", "normal",
+            "ssh_brute_force",
+            "sqli_attempt",
+            "port_scan",
+            "xss_attempt",
+            "dns_exfiltration",
+            "normal",
         }
         actual = {e.value for e in EventType}
         assert actual == expected

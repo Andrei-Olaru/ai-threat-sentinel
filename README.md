@@ -113,7 +113,7 @@ ai-threat-sentinel/
 ## Roadmap
 
 - [x] **Module 1** — Architecture, project setup, FastAPI skeleton, CI pipeline
-- [ ] **Module 2** — Log simulator, Redis ingestion queue
+- [x] **Module 2** — Log simulator, Redis ingestion queue
 - [ ] **Module 3** — ML engine (Isolation Forest), rule engine
 - [ ] **Module 4** — PostgreSQL persistence, Alembic migrations
 - [ ] **Module 5** — Groq LLM integration (RCA, MITRE ATT&CK)

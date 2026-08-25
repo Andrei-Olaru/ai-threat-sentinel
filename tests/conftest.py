@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from sentinel.config import Settings
+from sentinel.config import Environment, Settings
 from sentinel.main import create_app
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ def test_settings() -> Settings:
     """Provide test-specific settings (no real DB/Redis needed)."""
     return Settings(
         APP_NAME="sentinel-test",
-        APP_ENV="development",
+        APP_ENV=Environment.DEVELOPMENT,
         DEBUG=True,
         LOG_LEVEL="DEBUG",
         DATABASE_URL="postgresql+asyncpg://test:test@localhost:5432/test_db",

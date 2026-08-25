@@ -23,7 +23,7 @@ class TestSettings:
 
     def test_production_detection(self) -> None:
         """is_production should be True only for production env."""
-        settings = Settings(APP_ENV="production")
+        settings = Settings(APP_ENV=Environment.PRODUCTION)
         assert settings.is_production is True
         assert settings.is_development is False
 

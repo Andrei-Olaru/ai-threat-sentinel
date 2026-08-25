@@ -12,7 +12,7 @@ Data flow:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sentinel.core.logging import get_logger
 from sentinel.core.schemas import LogEvent
@@ -61,8 +61,8 @@ async def enqueue(redis: Redis, event: LogEvent) -> str:
         The Redis Stream message ID (e.g. "1692345678901-0").
     """
     # Serialize the event to JSON and store as a single "data" field
-    data = {"data": event.model_dump_json()}
-    message_id: bytes = await redis.xadd(STREAM_KEY, data)
+    data: dict[str, Any] = {"data": event.model_dump_json()}
+    message_id: Any = await redis.xadd(STREAM_KEY, data)  # type: ignore[arg-type]
     msg_id_str = message_id.decode() if isinstance(message_id, bytes) else str(message_id)
 
     logger.debug(
@@ -93,7 +93,7 @@ async def dequeue(
     results: list[tuple[str, LogEvent]] = []
 
     # XREADGROUP reads only events not yet delivered to this consumer
-    response = await redis.xreadgroup(
+    response: Any = await redis.xreadgroup(
         groupname=GROUP_NAME,
         consumername=CONSUMER_NAME,
         streams={STREAM_KEY: ">"},  # ">" means only new, undelivered messages
@@ -106,10 +106,12 @@ async def dequeue(
 
     # response format: [[stream_name, [(msg_id, {fields}), ...]]]
     for _stream_name, messages in response:
-        for msg_id_raw, fields in messages:
+        messages_list: list[Any] = messages
+        for msg_id_raw, fields in messages_list:
             msg_id = msg_id_raw.decode() if isinstance(msg_id_raw, bytes) else str(msg_id_raw)
             try:
-                raw_data = fields.get(b"data") or fields.get("data")
+                fields_dict: dict[Any, Any] = fields
+                raw_data = fields_dict.get(b"data") or fields_dict.get("data")
                 if raw_data is None:
                     logger.warning("event_missing_data", stream_id=msg_id)
                     continue
@@ -146,7 +148,7 @@ async def get_pending_count(redis: Redis) -> int:
     info = await redis.xpending(STREAM_KEY, GROUP_NAME)
     # xpending returns a dict with 'pending' count
     if isinstance(info, dict):
-        return info.get("pending", 0)
+        return int(info.get("pending", 0))
     # Some redis versions return a list: [pending_count, min_id, max_id, [[consumer, count]]]
     if isinstance(info, (list, tuple)) and len(info) > 0:
         return int(info[0])

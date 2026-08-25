@@ -8,6 +8,8 @@ GET  /api/v1/queue/stats  — View Redis queue metrics
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, Request
 
 from sentinel.core.logging import get_logger
@@ -19,7 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["Ingestion"])
 
 
-def _get_redis(request: Request):
+def _get_redis(request: Request) -> Any:
     """Extract the Redis connection from app state."""
     redis = getattr(request.app.state, "redis", None)
     if redis is None:
@@ -58,7 +60,7 @@ async def ingest_event(event: LogEvent, request: Request) -> IngestResponse:
 
 
 @router.post("/ingest/batch")
-async def ingest_batch(events: list[LogEvent], request: Request) -> dict:
+async def ingest_batch(events: list[LogEvent], request: Request) -> dict[str, Any]:
     """Ingest multiple log events in a single request.
 
     More efficient than sending events one by one — reduces
@@ -97,7 +99,7 @@ async def simulate_events(
     request: Request,
     count: int = 50,
     attack_ratio: float = 0.3,
-) -> dict:
+) -> dict[str, Any]:
     """Generate and ingest simulated log events for testing.
 
     This endpoint is the demo button — it generates realistic
@@ -141,7 +143,7 @@ async def simulate_events(
 
 
 @router.get("/queue/stats")
-async def queue_stats(request: Request) -> dict:
+async def queue_stats(request: Request) -> dict[str, Any]:
     """Get current Redis queue statistics."""
     redis = _get_redis(request)
 

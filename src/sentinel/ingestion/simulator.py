@@ -21,8 +21,12 @@ from __future__ import annotations
 
 import random
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sentinel.core.schemas import EventType, LogEvent
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # --- Realistic attack payloads ---
 
@@ -103,8 +107,7 @@ def _generate_ssh_brute_force() -> LogEvent:
         protocol="TCP",
         event_type=EventType.SSH_BRUTE_FORCE,
         payload=(
-            f"Failed password for root from {attacker_ip}"
-            f" port {random.randint(40000, 65535)} ssh2"
+            f"Failed password for root from {attacker_ip} port {random.randint(40000, 65535)} ssh2"
         ),
         user_agent="OpenSSH_8.9",
         response_status=401,
@@ -210,7 +213,7 @@ def _generate_normal_traffic() -> LogEvent:
 
 
 # Map each event type to its generator
-_GENERATORS: dict[EventType, callable] = {
+_GENERATORS: dict[EventType, Callable[[], LogEvent]] = {
     EventType.SSH_BRUTE_FORCE: _generate_ssh_brute_force,
     EventType.SQLI_ATTEMPT: _generate_sqli_attempt,
     EventType.PORT_SCAN: _generate_port_scan,
@@ -234,13 +237,15 @@ def generate_event(event_type: EventType | None = None) -> LogEvent:
     if random.random() < 0.7:
         return _generate_normal_traffic()
 
-    attack_type = random.choice([
-        EventType.SSH_BRUTE_FORCE,
-        EventType.SQLI_ATTEMPT,
-        EventType.PORT_SCAN,
-        EventType.XSS_ATTEMPT,
-        EventType.DNS_EXFILTRATION,
-    ])
+    attack_type = random.choice(
+        [
+            EventType.SSH_BRUTE_FORCE,
+            EventType.SQLI_ATTEMPT,
+            EventType.PORT_SCAN,
+            EventType.XSS_ATTEMPT,
+            EventType.DNS_EXFILTRATION,
+        ]
+    )
     return _GENERATORS[attack_type]()
 
 

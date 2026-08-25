@@ -22,13 +22,13 @@ from sentinel.config import Settings, get_settings
 from sentinel.core.logging import get_logger, setup_logging
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncGenerator
 
 logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager — runs on startup and shutdown."""
     settings: Settings = app.state.settings
 

@@ -139,5 +139,5 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["sklearn.*", "redis.*", "prometheus_client.*"]
+module = ["redis.*"]
 ignore_missing_imports = true
