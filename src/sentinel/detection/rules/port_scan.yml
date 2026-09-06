@@ -1,0 +1,28 @@
+# Sigma-style detection rule for port scanning
+#
+# What is Port Scanning?
+# An attacker probes many ports on a target to find which services
+# are running (open ports). Think of it like a thief checking every
+# door and window on a building to find one that's unlocked.
+#
+# Common tools: Nmap, Masscan, Zmap
+#
+# MITRE ATT&CK: T1046 — Network Service Discovery
+# https://attack.mitre.org/techniques/T1046/
+
+rule_id: RULE-003
+title: Port Scan Detection
+severity: medium
+description: >
+  Detects port scanning activity by matching events of type
+  port_scan with no HTTP response (status 0, since port scans
+  operate at the TCP/SYN level, not HTTP).
+mitre_attack_id: T1046
+
+conditions:
+  - field: event_type
+    operator: equals
+    value: port_scan
+  - field: response_status
+    operator: equals
+    value: 0

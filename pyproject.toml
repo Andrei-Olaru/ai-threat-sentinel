@@ -50,6 +50,9 @@ dependencies = [
     # HTML templates (HTMX dashboard)
     "jinja2>=3.1.0",
 
+    # YAML rule parsing
+    "pyyaml>=6.0.0",
+
     # Prometheus metrics exporter
     "prometheus-client>=0.21.0",
 ]
@@ -116,7 +119,10 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "ARG", "S106"]
+"scripts/**/*.py" = ["T201", "E501"]
 "src/sentinel/ingestion/simulator.py" = ["S311"]  # pseudo-random is fine for test data
+"src/sentinel/detection/rule_engine.py" = ["TC003"]  # Path used at runtime
+"src/sentinel/detection/ml_engine.py" = ["TC001"]  # FeatureVector used at runtime
 
 # --- Pytest ---
 [tool.pytest.ini_options]
@@ -139,5 +145,5 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["redis.*"]
+module = ["redis.*", "sklearn.*", "yaml.*"]
 ignore_missing_imports = true

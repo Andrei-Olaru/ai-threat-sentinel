@@ -1,0 +1,27 @@
+# Sigma-style detection rule for SQL injection attempts
+#
+# What is SQL Injection (SQLi)?
+# An attacker inserts malicious SQL code into web form inputs
+# or URL parameters to manipulate the database. Classic example:
+#   ' OR '1'='1' --
+# This tricks the database into returning all records.
+#
+# MITRE ATT&CK: T1190 — Exploit Public-Facing Application
+# https://attack.mitre.org/techniques/T1190/
+
+rule_id: RULE-002
+title: SQL Injection Attempt Detection
+severity: critical
+description: >
+  Detects SQL injection attempts by matching events of type
+  sqli_attempt with a non-empty payload (containing the SQL
+  injection string).
+mitre_attack_id: T1190
+
+conditions:
+  - field: event_type
+    operator: equals
+    value: sqli_attempt
+  - field: request_method
+    operator: equals
+    value: POST

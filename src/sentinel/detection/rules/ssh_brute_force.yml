@@ -1,0 +1,29 @@
+# Sigma-style detection rule for SSH brute force attacks
+#
+# What is SSH Brute Force?
+# An attacker tries many username/password combinations rapidly
+# against an SSH server (port 22). Automated tools like Hydra or
+# Medusa can try thousands of passwords per minute.
+#
+# MITRE ATT&CK: T1110.001 — Brute Force: Password Guessing
+# https://attack.mitre.org/techniques/T1110/001/
+
+rule_id: RULE-001
+title: SSH Brute Force Detection
+severity: high
+description: >
+  Detects SSH brute force attempts by matching events with
+  event_type ssh_brute_force targeting port 22 with failed
+  authentication (HTTP 401).
+mitre_attack_id: T1110.001
+
+conditions:
+  - field: event_type
+    operator: equals
+    value: ssh_brute_force
+  - field: dst_port
+    operator: equals
+    value: 22
+  - field: response_status
+    operator: equals
+    value: 401
