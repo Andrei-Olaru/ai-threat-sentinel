@@ -113,17 +113,17 @@ def _check_condition(event: LogEvent, condition: RuleCondition) -> bool:
     expected = condition.value
 
     if op == "equals":
-        return str(event_value) == str(expected)
+        return bool(str(event_value) == str(expected))
     if op == "contains":
-        return str(expected).lower() in str(event_value).lower()
+        return bool(str(expected).lower() in str(event_value).lower())
     if op == "gt":
-        return float(event_value) > float(expected)
+        return bool(float(event_value) > float(expected))
     if op == "lt":
-        return float(event_value) < float(expected)
+        return bool(float(event_value) < float(expected))
     if op == "gte":
-        return float(event_value) >= float(expected)
+        return bool(float(event_value) >= float(expected))
     if op == "lte":
-        return float(event_value) <= float(expected)
+        return bool(float(event_value) <= float(expected))
     if op == "in":
         try:
             return bool(event_value in expected)

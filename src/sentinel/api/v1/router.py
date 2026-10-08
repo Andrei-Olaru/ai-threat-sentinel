@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from sentinel.api.v1.alerts import router as alerts_router
 from sentinel.api.v1.health import router as health_router
 from sentinel.api.v1.ingest import router as ingest_router
 
@@ -18,3 +19,6 @@ api_v1_router.include_router(health_router)
 
 # Ingestion: /api/v1/ingest, /api/v1/simulate, /api/v1/queue/stats
 api_v1_router.include_router(ingest_router)
+
+# Alerts: /api/v1/alerts, /api/v1/alerts/stats, /api/v1/alerts/{id}
+api_v1_router.include_router(alerts_router)

@@ -123,6 +123,8 @@ ignore = [
 "src/sentinel/ingestion/simulator.py" = ["S311"]  # pseudo-random is fine for test data
 "src/sentinel/detection/rule_engine.py" = ["TC003"]  # Path used at runtime
 "src/sentinel/detection/ml_engine.py" = ["TC001"]  # FeatureVector used at runtime
+"src/sentinel/db/models.py" = ["TC003"]  # datetime used in Mapped types
+"alembic/**/*.py" = ["TC003"]  # migration scripts
 
 # --- Pytest ---
 [tool.pytest.ini_options]

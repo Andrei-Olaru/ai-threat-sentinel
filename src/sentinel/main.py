@@ -66,12 +66,36 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     app.state.redis = redis_conn
 
-    # TODO (Module 3): Load trained Isolation Forest model
-    # TODO (Module 4): Initialize async DB session factory
+    # --- Startup: PostgreSQL ---
+    db_engine = None
+    db_session_factory = None
+    if settings.DATABASE_URL:
+        try:
+            from sentinel.db.session import build_engine, build_session_factory
+
+            db_engine = build_engine(
+                database_url=settings.DATABASE_URL,
+                echo=settings.DEBUG,
+            )
+            db_session_factory = build_session_factory(db_engine)
+            logger.info("db_connected", url=settings.DATABASE_URL[:30] + "...")
+        except Exception:
+            logger.warning(
+                "db_connection_failed",
+                url=settings.DATABASE_URL[:30] + "...",
+            )
+            db_engine = None
+
+    app.state.db_engine = db_engine
+    app.state.db_session_factory = db_session_factory
 
     yield
 
     # --- Shutdown ---
+    if db_engine is not None:
+        await db_engine.dispose()
+        logger.info("db_disconnected")
+
     if redis_conn is not None:
         await redis_conn.close()
         logger.info("redis_disconnected")
